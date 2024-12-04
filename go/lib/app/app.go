@@ -13,7 +13,7 @@ type logger interface {
 	Error(msg string, args ...any)
 }
 
-type callbackFunc func(*os.File) (int, error)
+type callbackFunc func(*os.File) (string, error)
 
 type App struct {
 	logger logger
@@ -41,7 +41,7 @@ func (a *App) Run(callbackFunc callbackFunc) error {
 	if err != nil {
 		return err
 	}
-	a.logger.Info(fmt.Sprintf("result - %d", res))
+	a.logger.Info(fmt.Sprintf("result - %s", res))
 	return nil
 }
 

@@ -48,13 +48,13 @@ func parseLine(line string) (int, int, error) {
 	return i1, i2, nil
 }
 
-func historianHysteria(f *os.File) (int, error) {
+func historianHysteria(f *os.File) (string, error) {
 	scanner := bufio.NewScanner(f)
 	var s1, s2 []int
 	for scanner.Scan() {
 		i1, i2, err := parseLine(scanner.Text())
 		if err != nil {
-			return 0, err
+            return "", err
 		}
 		s1 = append(s1, i1)
 		s2 = append(s2, i2)
@@ -74,17 +74,17 @@ func historianHysteria(f *os.File) (int, error) {
 			sum += s2[i] - s1[i]
 		}
 	}
-	return sum, nil
+	return fmt.Sprint(sum), nil
 }
 
-func historianHysteria2(f *os.File) (int, error) {
+func historianHysteria2(f *os.File) (string, error) {
 	scanner := bufio.NewScanner(f)
 	var s []int
 	m := map[int]int{}
 	for scanner.Scan() {
 		i1, i2, err := parseLine(scanner.Text())
 		if err != nil {
-			return 0, err
+			return "", err
 		}
 		s = append(s, i1)
 		m[i2]++
@@ -97,5 +97,5 @@ func historianHysteria2(f *os.File) (int, error) {
 		}
 		sum += (i * count)
 	}
-	return sum, nil
+	return fmt.Sprint(sum), nil
 }
