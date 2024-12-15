@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -23,7 +24,10 @@ func main() {
 	if err != nil {
 		logger.Error(err.Error())
 	}
-
+	err = app.Run(printQueue2)
+	if err != nil {
+		logger.Error(err.Error())
+	}
 }
 
 func printQueue(f *os.File) (string, error) {
@@ -37,13 +41,44 @@ func printQueue(f *os.File) (string, error) {
 		if checkUpdate(s, rulesMap) {
 			v, err := strconv.Atoi(s[len(s)/2])
 			if err != nil {
-                return "", err
+				return "", err
 			}
 			sum += v
 		}
 	}
 
 	return fmt.Sprint(sum), nil
+}
+
+func printQueue2(f *os.File) (string, error) {
+	rules, updates := parseFile(f)
+
+	rulesMap := createRulesMap(rules)
+
+	sum := 0
+	for _, u := range updates {
+		s := strings.Split(u, ",")
+		if !checkUpdate(s, rulesMap) {
+			sorted := sortQueue(s, rulesMap)
+			v, err := strconv.Atoi(sorted[len(sorted)/2])
+			if err != nil {
+				return "", err
+			}
+			sum += v
+		}
+	}
+
+	return fmt.Sprint(sum), nil
+}
+
+func sortQueue(s []string, m map[string]map[string]bool) []string {
+	sort.Slice(s, func(i, j int) bool {
+		if m[s[i]][s[j]] {
+			return true
+		}
+		return false
+	})
+	return s
 }
 
 func checkUpdate(s []string, m map[string]map[string]bool) bool {
