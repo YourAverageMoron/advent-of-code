@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/YourAverageMoron/aoc/go/lib/args"
+	"github.com/YourAverageMoron/aoc/lib/args"
 )
 
 type logger interface {

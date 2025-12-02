@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/YourAverageMoron/aoc/go/lib/app"
+	"github.com/YourAverageMoron/aoc/lib/app"
 )
 
 func main() {

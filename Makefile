@@ -9,7 +9,7 @@ endif
 
 
 run_go: 
-	go run ./$(language)/$(year)/day$(day)/ ./data/$(year)/day$(day)
+	go run -C $(language) ./$(year)/day$(day)/ ../data/$(year)/day$(day)
 
 run_sql:
 	./sql/lib/run.sh $(year) day$(day) 
