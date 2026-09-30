@@ -36,7 +36,7 @@ func main() {
 
 func GetGiftShopFunc(isValid func (int) bool) func (f *os.File) (string, error) {
     return func (f *os.File) (string, error) {
-	ch := make(chan string)
+	ch := make(chan string, 1)
 	go readIdRanges(f, ch)
 
 	sum := 0
