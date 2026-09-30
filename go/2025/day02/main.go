@@ -19,7 +19,13 @@ func main() {
 		logger.Error("error initialising app", slog.Any("error", err))
 		return
 	}
-	err = app.Run(giftShop)
+	err = app.Run(GetGiftShopFunc(isValidPart1))
+	if err != nil {
+		logger.Error("error running app", slog.Any("error", err))
+		return
+	}
+
+    err = app.Run(GetGiftShopFunc(isValidPart2))
 	if err != nil {
 		logger.Error("error running app", slog.Any("error", err))
 		return
@@ -27,7 +33,9 @@ func main() {
 
 }
 
-func giftShop(f *os.File) (string, error) {
+
+func GetGiftShopFunc(isValid func (int) bool) func (f *os.File) (string, error) {
+    return func (f *os.File) (string, error) {
 	ch := make(chan string)
 	go readIdRanges(f, ch)
 
@@ -38,10 +46,8 @@ func giftShop(f *os.File) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		fmt.Println(start, end)
 		for i := start; i <= end; i++ {
 			if !isValid(i) {
-				fmt.Println(i)
 				sum += i
 			}
 		}
@@ -49,8 +55,9 @@ func giftShop(f *os.File) (string, error) {
 
 	return strconv.Itoa(sum), nil
 }
+}
 
-func isValid(input int) bool {
+func isValidPart1(input int) bool {
 	si := strconv.Itoa(input)
 	if len(si)%2 != 0 {
 		return true
@@ -62,6 +69,29 @@ func isValid(input int) bool {
 		}
 	}
 	return false
+}
+
+func isValidPart2(input int) bool {
+	si := strconv.Itoa(input)
+    for subLen := 1; subLen <= len(si) / 2; subLen ++ {
+        if len(si) % subLen != 0 {
+            // not divisible e.g "1231231" and sublen = 3 
+            continue
+        }
+        if isRepeated(si, si[0:subLen]){
+            return false
+        }
+    }
+    return true
+}
+
+func isRepeated(input, substring string) bool {
+    for i:= 0; i + len(substring) <= len(input); i+= len(substring) {
+        if input[i:i+len(substring)] != substring{
+            return false
+        } 
+    }
+    return true
 }
 
 func parseRange(rId string) (int, int, error) {
