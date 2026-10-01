@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/YourAverageMoron/aoc/lib/app"
 )
@@ -64,6 +65,26 @@ func getMaxJoltagePart1(bank string) (int, error) {
 }
 
 func getMaxJoltagePart2(bank string) (int, error) {
-    // TODO:
-    return 0, nil
+	arr := make([]int, 12)
+	for i, char := range bank {
+		startPos := 12 - len(bank) + i
+        if startPos < 0 {
+                startPos = 0
+            }
+        for curPos := startPos; curPos < 12; curPos ++ {
+            if int(char-'0') > arr[curPos] {
+                arr[curPos] = int(char - '0')
+                for i := curPos + 1; i < len(arr); i++ {
+                    arr[i] = 0
+                }
+                break
+            }
+        }
+	}
+
+    sb := strings.Builder{}
+    for _, v := range arr {
+        sb.Write([]byte(strconv.Itoa(v)))
+    }
+    return strconv.Atoi(sb.String())
 }
