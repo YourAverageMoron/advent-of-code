@@ -16,7 +16,12 @@ func main() {
 		logger.Error("error initialising app", slog.Any("error", err))
 		return
 	}
-	err = app.Run(printingDepartment)
+	err = app.Run(printingDepartmentPart1)
+	if err != nil {
+		logger.Error("error running app", slog.Any("error", err))
+		return
+	}
+	err = app.Run(printingDepartmentPart2)
 	if err != nil {
 		logger.Error("error running app", slog.Any("error", err))
 		return
@@ -24,7 +29,7 @@ func main() {
 }
 
 
-func printingDepartment(f *os.File) (string, error) {
+func printingDepartmentPart1(f *os.File) (string, error) {
     m := parseMap(f)
 
     sum := 0
@@ -34,6 +39,30 @@ func printingDepartment(f *os.File) (string, error) {
                 sum ++
             }
         }
+    }
+    
+    return strconv.Itoa(sum), nil
+}
+
+func printingDepartmentPart2(f *os.File) (string, error) {
+    m := parseMap(f)
+
+    sum := 0
+    rollingSum := 0
+    for {
+        for rowNum, row := range m {
+            for colNum, char := range row {
+                if char == '@' && isAccessible(m, rowNum, colNum) {
+                    rollingSum ++
+                    m[rowNum][colNum] = 'x'
+                }
+            }
+        }
+        if rollingSum == 0 {
+            break
+        }
+        sum += rollingSum
+        rollingSum = 0
     }
     
     return strconv.Itoa(sum), nil
