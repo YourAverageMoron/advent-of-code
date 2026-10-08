@@ -18,72 +18,110 @@ func main() {
 		logger.Error("error initialising app", slog.Any("error", err))
 		return
 	}
-	err = app.Run(trashCompactor)
+	err = app.Run(getTrashCompactor(getCalcListsPart1))
+	if err != nil {
+		logger.Error("error running app", slog.Any("error", err))
+		return
+	}
+	err = app.Run(getTrashCompactor(getCalcListPart2))
 	if err != nil {
 		logger.Error("error running app", slog.Any("error", err))
 		return
 	}
 }
 
-func trashCompactor(f *os.File) (string, error) {
-
-	cl := getCalcLists(f)
-
-	sum := 0
-	for _, c := range cl {
-		val, err := strconv.Atoi(c[0])
-		if err != nil {
-			return "", fmt.Errorf("failed to parse string to int (%s): %w", c[0], err)
-		}
-		for i := 1; i < len(c)-1; i++ {
-			curr, err := strconv.Atoi(c[i])
+func getTrashCompactor(parseFile func(*os.File) [][]string) func(f *os.File) (string, error) {
+	return func(f *os.File) (string, error) {
+		cl := parseFile(f)
+		sum := 0
+		for _, c := range cl {
+			val, err := strconv.Atoi(c[0])
 			if err != nil {
-				return "", fmt.Errorf("failed to parse string to int (%s): %w", c[i], err)
+				return "", fmt.Errorf("failed to parse string to int (%s): %w", c[0], err)
 			}
-			if c[len(c)-1] == "*" {
-				val *= curr
+			for i := 1; i < len(c)-1; i++ {
+				curr, err := strconv.Atoi(c[i])
+				if err != nil {
+					return "", fmt.Errorf("failed to parse string to int (%s): %w", c[i], err)
+				}
+				if c[len(c)-1] == "*" {
+					val *= curr
+				}
+				if c[len(c)-1] == "+" {
+					val += curr
+				}
 			}
-			if c[len(c)-1] == "+" {
-				val += curr
-			}
+			sum += val
 		}
-		sum += val
+		return strconv.Itoa(sum), nil
 	}
-
-	return strconv.Itoa(sum), nil
 }
 
-func getCalcLists(f *os.File) [][]string {
+func getCalcListsPart1(f *os.File) [][]string {
 	sc := bufio.NewScanner(f)
-	sb := strings.Builder{}
 
 	res := [][]string{}
-	col := 0
 
 	for sc.Scan() {
+		sb := strings.Builder{}
+		col := 0
 		for _, char := range sc.Text() {
 			if char == ' ' {
-				res, col, sb = writeString(sb, col, res)
-
+				res, col = writeString(sb.String(), col, res)
+				sb.Reset()
 				continue
 			}
 			sb.WriteRune(char)
 		}
-		res, col, sb = writeString(sb, col, res)
-		col = 0
+		res, col = writeString(sb.String(), col, res)
 	}
 	return res
 }
 
-func writeString(sb strings.Builder, col int, listOLists [][]string) ([][]string, int, strings.Builder) {
-	if sb.Len() != 0 {
+func writeString(s string, col int, listOLists [][]string) ([][]string, int) {
+	if len(s) != 0 {
 		if len(listOLists) <= col {
 			listOLists = append(listOLists, []string{})
 		}
-		s := sb.String()
 		listOLists[col] = append(listOLists[col], s)
-		sb.Reset()
 		col++
 	}
-	return listOLists, col, sb
+	return listOLists, col
+}
+
+
+func getCalcListPart2(f *os.File) [][]string {
+	fl := [][]rune{}
+
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		row := []rune{}
+		for _, r := range sc.Text() {
+			row = append(row, r)
+		}
+		fl = append(fl, row)
+	}
+
+	calcs := [][]string{}
+	curr := []string{}
+	for j := len(fl[0]) - 1; j >= 0; j-- {
+		sb := strings.Builder{}
+		for i := 0; i < len(fl)-1; i++ {
+			if fl[i][j] != ' ' {
+				sb.WriteRune(fl[i][j])
+			}
+		}
+		if sb.Len() > 0 {
+			curr = append(curr, sb.String())
+			sb.Reset()
+		}
+
+		if fl[len(fl)-1][j] != ' ' {
+			curr = append(curr, string(fl[len(fl)-1][j]))
+			calcs = append(calcs, curr)
+			curr = []string{}
+		}
+	}
+
+	return calcs
 }
